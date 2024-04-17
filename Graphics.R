@@ -568,8 +568,7 @@ tab_aux %>%
   geom_point() +
   facet_wrap(~biome, scale="free") +
   geom_smooth(method = "lm", se=FALSE) +
-  ggpubr::stat_regline_equation(ggplot2::aes(
-    label =  paste(..eq.label.., ..rr.label.., sep = "*plain(\",\")~~"))) +
+  ggpubr::stat_cor()+
   ggplot2::theme_bw()+
   ggplot2::labs(
     x=expression('Precipitation (mm '~year^-1~')'),
