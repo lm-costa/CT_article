@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+.quarto
+SIF/data-raw/
+SIF/data/
+precipitation/data-raw/
+precipitation/data/
