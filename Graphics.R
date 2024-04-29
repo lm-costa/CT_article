@@ -215,8 +215,8 @@ seeg_data %>%
            y=altura/.8,
            label = paste0("(",round(net_emission$emission,2),")"),
            size=4, fontface="italic")
-ggsave('img/figure_2.png',
-       units="in", width=8, height=6,
+ggsave('img/figure_1b.png',
+       units="in", width=12, height=6,
        dpi=300)
 
 
