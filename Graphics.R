@@ -158,7 +158,7 @@ ggsave('img/figure_1a.png',
                 dpi=300)
 
 
-#########  Figure 2 SEEG ######
+#########  Figure 1b SEEG ######
 
 seeg_data <- read.csv('data-raw/seeg_emission.csv',sep = ";",header = T) %>%
   pivot_longer(cols = 'X2015':'X2022',
@@ -220,7 +220,7 @@ ggsave('img/figure_1b.png',
        dpi=300)
 
 
-#######   Figure 3 anomalie
+#######   Figure 2 anomalie
 ### the anomalie data will be used on arcmap
 
 anos <- 2015:2022
@@ -253,7 +253,7 @@ for(i in seq_along(anos)){
 
 
 
-##### Figure 4
+##### Figure 3
 # the precipitation pre-processing are insid precipitation folder
 
 cores_biome <- c("#00A087FF", "#4DBBD5FF", "#E64B35FF", "#3C5488FF",
@@ -386,7 +386,7 @@ purrr::map(meus_biomas, ~{
 
 })
 
-#### Figure 5
+#### Figure 4
 ## the preprocessing of sif are inside the SIF folder
 ## the data processed here are gonna be used in arcmap
 
