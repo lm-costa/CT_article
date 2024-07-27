@@ -585,3 +585,4 @@ tab_aux %>%
 ggsave('img/extendend_figure_1.png',
        units="in", width=12, height=6,
        dpi=300)
+
