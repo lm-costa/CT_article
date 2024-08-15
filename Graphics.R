@@ -96,7 +96,7 @@ df1$sector_name <- "forestry_and_land_use"
 
 
 
-### Figure 1a CT
+### Figure 2a CT
 
 netemissions <- rbind(df1,df2) %>%
   group_by(year) %>%
@@ -129,9 +129,9 @@ rbind(df1,df2) %>%
   geom_col() +
   annotate("text",
            x=2015:2022,
-           y=high/1e9+.35,
-           label = paste0("(",round(netemissions$emission/1e9,2),")"),
-           size=4, fontface="italic") +
+           y=high/1e9+.2,
+           label = paste0(round(netemissions$emission/1e9,2)),
+           size=4, fontface="bold") +
   geom_col(color="black") +
   theme_bw() +
   scale_fill_manual(values = colors) +
@@ -146,19 +146,14 @@ rbind(df1,df2) %>%
     legend.text = element_text(size = rel(1.3)),
     legend.title = element_text(size = rel(1.3)),
     legend.position = 'bottom'
-  ) +
-  annotate("text",
-           x=2015:2022,
-           y=high/1e9+.13,
-           label = tab_country_emissions$emission_c,
-           size=4, fontface="bold")
+  )
 
-ggsave('img/figure_1a.png',
+ggsave('img/figure_2a.png',
                 units="in", width=12, height=6,
                 dpi=300)
 
 
-#########  Figure 1b SEEG ######
+#########  Figure 2b SEEG ######
 
 seeg_data <- read.csv('data-raw/seeg_emission.csv',sep = ";",header = T) %>%
   pivot_longer(cols = 'X2015':'X2022',
@@ -188,6 +183,8 @@ emission <- seeg_data %>%
   summarise(emission = sum(emission))
 
 seeg_data %>%
+  group_by(Sector,year) |>
+  summarise(emission = sum(emission)) |>
   ggplot(aes(x=year,y=emission,fill=Sector))+
   geom_col()+
   labs(x="",
@@ -206,21 +203,16 @@ seeg_data %>%
   scale_fill_manual(values = sector_color)+
   annotate("text",
            x=2015:2022,
-           y=altura/.95,
-           label = round(emission$emission,2),
-           size=4, fontface="bold")+
-  annotate("text",
-           x=2015:2022,
-           y=altura/.8,
-           label = paste0("(",round(net_emission$emission,2),")"),
-           size=4, fontface="italic")
+           y=net_emission$emission +0.1,
+           label = round(net_emission$emission,2),
+           size=4, fontface="bold")
 
-ggsave('img/figure_1b.png',
+ggsave('img/figure_2b.png',
        units="in", width=12, height=6,
        dpi=300)
 
 
-#######   Figure 2 anomalie
+#######   Figure 3 anomalie
 ### the anomalie data will be used on arcmap
 
 anos <- 2015:2022
@@ -253,7 +245,7 @@ for(i in seq_along(anos)){
 
 
 
-##### Figure 3
+##### Figure 4
 # the precipitation pre-processing are insid precipitation folder
 
 cores_biome <- c("#00A087FF", "#4DBBD5FF", "#E64B35FF", "#3C5488FF",
@@ -386,7 +378,7 @@ purrr::map(meus_biomas, ~{
 
 })
 
-#### Figure 4
+#### Figure 5
 ## the preprocessing of sif are inside the SIF folder
 ## the data processed here are gonna be used in arcmap
 
@@ -478,38 +470,12 @@ states |> #example
   tema_mapa()+
   ggplot2::labs(x='Longitude',y='Latitude',col=expression('β (Wm'^-2~'sr'^-1~mu~'m'^-1~')'))
 
+### Figure 6
 
-#### Figure 6
-emissions_sources |>
-  filter(year>2014 & year < 2023) |>
-  filter(gas == "co2e_100yr",
-         !source_name %in% nomes_uf,
-         sub_sector %in% c("forest-land-clearing",
-                           "forest-land-degradation",
-                           "shrubgrass-fires",
-                           "forest-land-fires",
-                           "wetland-fires",
-                           "removals")|
-           sector_name=='forestry_and_land_use'
-  ) |>
-  group_by(sub_sector,year) %>%
-  summarise(
-    emission = sum(emissions_quantity, na.rm=TRUE)
-  ) %>%
-  ggplot(aes(fill=sub_sector,y=emission/1e9,group=year,
-             x=forcats::as_factor(year)))+
-  geom_col(position = 'dodge')+
-  scale_fill_viridis_d()+
-  labs(x='',
-       y=expression('Emission (G ton )'),
-       fill='')+
-  theme_bw()+
-  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1),
-        legend.position = 'bottom')
+# the script related to this figure is the `correlation_results.R`
 
-ggsave('img/figure_6a.png',
-       units="in", width=8, height=6,
-       dpi=300)
+
+#### Figure 7
 
 emissions_sources |>
   filter(year > 2014 & year < 2023,
@@ -526,7 +492,7 @@ emissions_sources |>
   labs(x='',y='Emission (G ton)')+
   theme_bw()
 
-ggsave('img/figure_6b.png',
+ggsave('img/figure_7.png',
        units="in", width=8, height=6,
        dpi=300)
 
@@ -582,7 +548,39 @@ tab_aux %>%
     y='Emission (G ton)'
   )
 
-ggsave('img/extendend_figure_1.png',
+ggsave('img/sup_figure_1.png',
        units="in", width=12, height=6,
        dpi=300)
 
+
+
+emissions_sources |>
+  filter(year>2014 & year < 2023) |>
+  filter(gas == "co2e_100yr",
+         !source_name %in% nomes_uf,
+         sub_sector %in% c("forest-land-clearing",
+                           "forest-land-degradation",
+                           "shrubgrass-fires",
+                           "forest-land-fires",
+                           "wetland-fires",
+                           "removals")|
+           sector_name=='forestry_and_land_use'
+  ) |>
+  group_by(sub_sector,year) %>%
+  summarise(
+    emission = sum(emissions_quantity, na.rm=TRUE)
+  ) %>%
+  ggplot(aes(fill=sub_sector,y=emission/1e9,group=year,
+             x=forcats::as_factor(year)))+
+  geom_col(position = 'dodge')+
+  scale_fill_viridis_d()+
+  labs(x='',
+       y=expression('Emission (G ton )'),
+       fill='')+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 35, vjust = 1, hjust=1),
+        legend.position = 'bottom')
+
+ggsave('img/sup_figure2.png',
+       units="in", width=8, height=6,
+       dpi=300)
