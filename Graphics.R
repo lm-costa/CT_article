@@ -584,3 +584,84 @@ emissions_sources |>
 ggsave('img/sup_figure2.png',
        units="in", width=8, height=6,
        dpi=300)
+
+
+
+
+###
+library(treemapify)
+rbind(df1,df2)%>%
+  filter(year != 2023) %>%
+  group_by(sector_name) %>%
+  filter(sector_name!='forestry_and_land_use') |>
+  mutate(
+   sector_name= case_when(
+      sector_name == 'agriculture'~'Agriculture',
+      sector_name == 'fossil_fuel_operations'~'Fossil Fuel',
+      sector_name=='buildings'~'Buildings',
+      sector_name=='fluorinated_gases'~'Fluorinated',
+      sector_name=='waste'~'Waste',
+      sector_name=='power'~'Power',
+      sector_name=='manufacturing'~'Manufacturing',
+      sector_name=='transportation'~'Transportation',
+      sector_name=='mineral_extraction'~'Mineral extraction'
+    )
+  ) |>
+  summarise(
+    emission = sum(emission)/1e9
+  ) |>
+  arrange(emission)  %>%
+  ungroup() %>%
+  mutate(emisison_p = emission/sum(emission)*100) %>%
+  ggplot(aes(area = emisison_p, fill = sector_name)) +
+  geom_treemap() +
+  geom_treemap_text(
+    aes(label = paste(sector_name,
+                      paste0(round(emisison_p, 2), "%"), sep = "\n")),
+    colour = "white") +
+  theme(legend.position = "none")
+
+
+seeg_data %>%
+  filter(Sector!='Forestry') |>
+  group_by(Sector) |>
+  summarise(emission = sum(emission)) |>
+  arrange(emission)  %>%
+  ungroup() %>%
+  mutate(emisison_p = emission/sum(emission)*100) %>%
+  ggplot(aes(area = emisison_p, fill = Sector)) +
+  geom_treemap() +
+  geom_treemap_text(
+    aes(label = paste(Sector,
+                      paste0(round(emisison_p, 2), "%"), sep = "\n")),
+    colour = "white") +
+  theme(legend.position = "none")
+
+
+##
+
+
+rbind(df1,df2)%>%
+  filter(year != 2023) %>%
+  group_by(year) |>
+  summarise(CT = sum(emission)/1e9) |>
+  left_join(
+    seeg_data %>%
+      group_by(year) |>
+      summarise(SEEG = sum(emission))
+  ) |>
+  ungroup() |>
+  pivot_longer(
+    cols = 'CT':'SEEG',
+    names_to = 'Inventory',
+    values_to = 'emission'
+  ) |>
+  ggplot(aes(x=year,y=emission,col=Inventory,fill=Inventory))+
+  geom_col(position='dodge')+
+  xlab('')+
+  ylab(expression('Emission (G ton CO'[2]~'eq)'))
+
+
+ggsave('img/GA.png',
+       units="in", width=8, height=6,
+       dpi=600)
