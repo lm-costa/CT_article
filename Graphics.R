@@ -585,8 +585,141 @@ ggsave('img/sup_figure2.png',
        units="in", width=8, height=6,
        dpi=300)
 
+#####
+
+seeg_biome <- readxl::read_excel('data-raw/seeg_emission_biome.xlsx')
+seeg_biome <- seeg_biome |>
+  pivot_longer('2015':'2022',
+               names_to = 'year',
+               values_to = 'emission') |>
+  mutate(
+    emission=emission/1e9
+  ) |>
+  rename(biome=Biome) |>
+  mutate(year=as.numeric(year))
+
+tab_aux <- seeg_biome |> left_join(precipitation)
+
+tab_aux %>%
+  group_by(year,biome) %>%
+  summarise(
+    emission = sum(emission),
+    prec_mean = mean(prec_mean)
+  ) %>%
+  group_by(biome) %>%
+  nest() %>%
+  mutate(
+    correlation = map(data,my_corr,valor="coeficiente"),
+    p.value = map(data,my_corr,valor="valor.p")
+  ) %>%
+  select(-data) %>%
+  unnest()
 
 
+
+tab_aux |>
+  group_by(biome) |>
+  summarise(
+    max_em = max(emission),
+    mean_em = mean(emission),
+    sd_em =sd(emission),
+    min_em =min(emission),
+    cv=100*(sd_em/mean_em)
+  )
+
+
+tab_aux |>
+  group_by(year) |>
+  filter(biome=='PMP') |>
+  summarise(
+    em= sum(emission),
+    max_em = max(emission),
+    mean_em = mean(emission),
+    sd_em =sd(emission),
+    min_em =min(emission),
+    cv=100*(sd_em/mean_em)
+  )
+
+
+tab_aux |>
+  ggplot(aes(x=year,y=emission)) +
+  geom_col(aes(fill=Sector),color="black") +
+  scale_fill_manual(values = sector_color)+
+  facet_wrap(~biome,scale='free')+
+  ylab('Emission (G ton)')+
+  xlab('')+
+  theme_bw() +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(size = rel(1.25)),
+        axis.title.x = element_text(size = rel(1.75)),
+        axis.text.y = element_text(size = rel(1.7)),
+        axis.title.y.left =  element_text(size = rel(1.75),vjust = +1),
+        axis.title.y.right = element_text(size = rel(1.75),vjust = +2),
+        legend.text = element_text(size = rel(1.3)),)
+
+ggsave('img/sup_figure2a.png',
+       units="in", width=8, height=6,
+       dpi=300)
+
+
+tab_aux %>%
+  #filter(Sector=="Forestry") |>
+  group_by(year,biome) %>%
+  summarise(
+    emission = sum(emission),
+    prec_mean = mean(prec_mean)
+  ) %>%
+  ungroup() %>%
+  ggplot(aes(x=prec_mean, y=emission, color=biome)) +
+  geom_point() +
+  facet_wrap(~biome, scale="free") +
+  geom_smooth(method = "lm", se=FALSE) +
+  ggpubr::stat_cor()+
+  ggplot2::theme_bw()+
+  ggplot2::theme(axis.text.x = element_text(size = rel(1.25)),
+                 axis.title.x = element_text(size = rel(1.5)),
+                 axis.text.y = element_text(size = rel(1.25)),
+                 axis.title.y = element_text(size = rel(1.5)),
+                 legend.text = element_text(size = rel(1.3)),
+                 legend.title = element_text(size = rel(1.3))
+  )+
+  ggplot2::labs(
+    x=expression('Precipitation (mm '~year^-1~')'),
+    y='Emission (G ton)'
+  )
+
+ggsave('img/sup_figure2b.png',
+       units="in", width=10, height=8,
+       dpi=300)
+
+
+biomes |>
+  filter(name_biome!='Sistema Costeiro') |>
+  mutate(
+    name_biome=case_when(
+      name_biome=='Amazônia'~'AMZ',
+      name_biome=='Caatinga'~'CAAT',
+      name_biome=='Cerrado'~'CERR',
+      name_biome=='Mata Atlântica'~'AF',
+      name_biome=='Pampa'~'PMP',
+      name_biome=='Pantanal'~'PNT'
+      )
+  ) |>
+  select(-year) |>
+  rename(biome=name_biome) |>
+  left_join(tab_aux |> select(biome,year,emission)) |>
+  group_by(year,biome) |>
+  summarise(emission=sum(emission,na.rm = T)) |>
+  ggplot()+
+  geom_sf(aes(fill=emission))+
+  facet_wrap(~year)+
+  scale_fill_viridis_c(limits = c(0, 1))+
+  labs(fill='Emission (G ton)')+
+  tema_mapa()
+
+ggsave('img/sup_figure1.png',
+       units="in", width=8, height=6,
+       dpi=300)
 
 ###
 library(treemapify)
