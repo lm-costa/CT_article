@@ -1,5 +1,8 @@
 
-# **The importance of Brazil’s biomes and the role of precipitation to achieve country-level net emissions** *(Provisional name)*
+# **A comparative analysis of GHG inventories and ecosystems carbon absorption in Brazil**
+
+[da Costa et
+al. (2025)](https://doi.org/10.1016/j.scitotenv.2024.177932)
 
 ## **Initial Considerations**
 
